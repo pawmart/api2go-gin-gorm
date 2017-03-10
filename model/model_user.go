@@ -18,6 +18,12 @@ type User struct {
 	exists        bool        `sql:"-"`
 }
 
+// Generate uuid not int id.
+//func (user *User) BeforeCreate(scope *gorm.Scope) error {
+//  scope.SetColumn("ID", uuid.New())
+//  return nil
+//}
+
 // GetID to satisfy jsonapi.MarshalIdentifier interface
 func (u User) GetID() string {
 	return strconv.FormatInt(u.ID, 10)

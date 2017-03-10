@@ -1,7 +1,7 @@
 # api2go-gorm-gin-crud-example
 [![Build Status](https://travis-ci.org/hnakamur/api2go-gorm-gin-crud-example.svg?branch=master)](https://travis-ci.org/hnakamur/api2go-gorm-gin-crud-example)
 
-This is a CRUD example using [jinzhu/gorm](https://github.com/jinzhu/gorm) and [gin-gonic/gin](https://github.com/gin-gonic/gin).
+This is a CRUD example using [jinzhu/gorm](https://github.com/jinzhu/gorm) and [gin-gonic/gin](https://gopkg.in/gin-gonic/gin.v1).
 This example is a fork of the one in [manyminds/api2go](https://github.com/manyminds/api2go).
 
 ## Examples

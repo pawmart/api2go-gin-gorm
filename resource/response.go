@@ -9,7 +9,7 @@ type Response struct {
 // Metadata returns additional meta data
 func (r Response) Metadata() map[string]interface{} {
 	return map[string]interface{}{
-		"author":      "The api2go examples crew",
+		"author":      "Pawel Martuszewski",
 		"license":     "wtfpl",
 		"license-url": "http://www.wtfpl.net",
 	}

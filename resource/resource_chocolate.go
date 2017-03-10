@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
-	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
+	"api2go-gin-gorm/model"
+	"api2go-gin-gorm/storage"
 	"github.com/manyminds/api2go"
 )
 

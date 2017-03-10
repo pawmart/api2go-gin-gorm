@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
+	"api2go-gin-gorm/model"
 	"github.com/jinzhu/gorm"
 	"github.com/manyminds/api2go"
 )
