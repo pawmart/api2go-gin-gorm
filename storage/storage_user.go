@@ -4,9 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"api2go-gin-gorm/model"
+	"api2go-gin-gorm-simple/model"
 	"github.com/jinzhu/gorm"
 	"github.com/manyminds/api2go"
 )
@@ -22,14 +21,15 @@ type UserStorage struct {
 }
 
 // GetAll returns the user map (because we need the ID as key too)
-func (s UserStorage) GetAll() (map[int64]*model.User, error) {
+func (s UserStorage) GetAll() (map[string]*model.User, error) {
+
 	var users []model.User
 	s.db.Find(&users)
 	if s.db.Error != nil {
 		return nil, s.db.Error
 	}
 
-	userMap := make(map[int64]*model.User)
+	userMap := make(map[string]*model.User)
 	for i := range users {
 		u := &users[i]
 		userMap[u.ID] = u
@@ -39,38 +39,23 @@ func (s UserStorage) GetAll() (map[int64]*model.User, error) {
 
 // GetOne user
 func (s UserStorage) GetOne(id string) (model.User, error) {
-	intID, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		errMessage := fmt.Sprintf("User id must be integer: %s", id)
-		return model.User{}, api2go.NewHTTPError(errors.New(errMessage), errMessage, http.StatusBadRequest)
-	}
-	return s.getOneWithAssociations(intID)
-}
 
-func (s UserStorage) getOneWithAssociations(id int64) (model.User, error) {
 	var user model.User
-	s.db.First(&user, id)
-	s.db.Model(&user).Related(&user.Chocolates, "Chocolates")
+	s.db.First(&user, "id = ?", id)
+
 	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		errMessage := fmt.Sprintf("User for id %s not found", id)
 		return model.User{}, api2go.NewHTTPError(errors.New(errMessage), errMessage, http.StatusNotFound)
 	} else if err != nil {
 		return model.User{}, err
 	}
-	user.ChocolatesIDs = make([]string, len(user.Chocolates))
-	for i, choc := range user.Chocolates {
-		user.ChocolatesIDs[i] = choc.GetID()
-	}
+
 	return user, nil
 }
 
 // Insert a user
 func (s *UserStorage) Insert(c model.User) (string, error) {
-	c.Chocolates = make([]model.Chocolate, len(c.ChocolatesIDs))
-	err := s.updateChocolatesByChocolatesIDs(&c)
-	if err != nil {
-		return "", err
-	}
+
 	s.db.Create(&c)
 	if s.db.Error != nil {
 		return "", s.db.Error
@@ -80,13 +65,9 @@ func (s *UserStorage) Insert(c model.User) (string, error) {
 
 // Delete one :(
 func (s *UserStorage) Delete(id string) error {
-	intID, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return fmt.Errorf("User id must be integer: %s", id)
-	}
 
 	var user model.User
-	s.db.First(&user, intID)
+	s.db.First(&user, "id = ?", id)
 	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		return fmt.Errorf("User with id %s does not exist", id)
 	}
@@ -97,50 +78,7 @@ func (s *UserStorage) Delete(id string) error {
 
 // Update a user
 func (s *UserStorage) Update(c model.User) error {
-	user, err := s.getOneWithAssociations(c.ID)
-	if err != nil {
-		return err
-	}
 
-	user.Username = c.Username
-	user.PasswordHash = c.PasswordHash
-	var chocAssocsToDelete []model.Chocolate
-	for i, chocID := range user.ChocolatesIDs {
-		if indexOf(chocID, c.ChocolatesIDs) == -1 {
-			chocAssocsToDelete = append(chocAssocsToDelete, user.Chocolates[i])
-		}
-	}
-	if len(chocAssocsToDelete) > 0 {
-		s.db.Model(&user).Association("Chocolates").Delete(chocAssocsToDelete)
-	}
-
-	user.ChocolatesIDs = c.ChocolatesIDs
-	err = s.updateChocolatesByChocolatesIDs(&user)
-	if err != nil {
-		return err
-	}
-	s.db.Save(&user)
+	s.db.Save(&c)
 	return s.db.Error
-}
-
-func indexOf(s string, items []string) int {
-	for i, item := range items {
-		if s == item {
-			return i
-		}
-	}
-	return -1
-}
-
-func (s *UserStorage) updateChocolatesByChocolatesIDs(u *model.User) error {
-	u.Chocolates = make([]model.Chocolate, len(u.ChocolatesIDs))
-	for i, chocID := range u.ChocolatesIDs {
-		intID, err := strconv.ParseInt(chocID, 10, 64)
-		if err != nil {
-			return err
-		}
-		// TODO: Fix N+1 query problem
-		s.db.First(&u.Chocolates[i], intID)
-	}
-	return nil
 }

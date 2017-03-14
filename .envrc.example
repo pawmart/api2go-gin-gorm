@@ -1,2 +1,2 @@
 export DB_DIALECT=sqlite3
-export DB_PARAMS=storage.db
+export DB_PARAMS=storage2.db
