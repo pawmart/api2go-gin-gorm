@@ -2,22 +2,30 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/lonelycode/go-uuid/uuid"
+	"api2go-gin-gorm-simple/utils"
 )
 
 // User is a generic database user
 type User struct {
-	ID string `json:"-"`
+	ID           string `json:"-"`
 	//rename the username field to user-name.
-	Username      string      `json:"user-name"`
-	PasswordHash  string      `json:"-"`
-	exists        bool        `sql:"-"`
+	Username     string      `json:"user-name"`
+	PasswordHash string      `json:"-"`
+	exists       bool        `sql:"-"`
 }
 
-// Generate uuid not int id.
+// Generate human id
 func (user *User) BeforeCreate(scope *gorm.Scope) error {
-  scope.SetColumn("ID", uuid.New())
-  return nil
+
+	identifier := utils.GenerateId("USR")
+
+	db := scope.DB().New()
+
+	if db.Where("id = ?", identifier).Find(&user).RecordNotFound() == false {
+		return user.BeforeCreate(scope)
+	}
+
+	return scope.SetColumn("ID", identifier)
 }
 
 // GetID to satisfy jsonapi.MarshalIdentifier interface
