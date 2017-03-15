@@ -3,7 +3,7 @@ package storage
 import (
 	"os"
 
-	"api2go-gin-gorm/model"
+	"api2go-gin-gorm-simple/model"
 	"github.com/jinzhu/gorm"
 )
 
@@ -14,8 +14,8 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	//db.LogMode(true)
-	db.AutoMigrate(&model.User{}, &model.Chocolate{})
+	db.LogMode(true)
+	db.AutoMigrate(&model.User{})
 
 	return db, nil
 }

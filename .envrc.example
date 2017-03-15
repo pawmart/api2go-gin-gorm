@@ -1,2 +1,5 @@
 export DB_DIALECT=sqlite3
 export DB_PARAMS=storage2.db
+
+export DB_DIALECT=mysql
+export DB_PARAMS=root:root@/demo?charset=utf8&parseTime=True&loc=Local
