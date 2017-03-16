@@ -17,11 +17,9 @@ type User struct {
 // Generate human id
 func (user *User) BeforeCreate(scope *gorm.Scope) error {
 
-	identifier := utils.GenerateId("USR")
+	identifier := utils.GenerateHumanId("USR")
 
-	db := scope.DB().New()
-
-	if db.Where("id = ?", identifier).Find(&user).RecordNotFound() == false {
+	if scope.DB().Select("1").Where("id = ?", identifier).First(&user).RecordNotFound() == false {
 		return user.BeforeCreate(scope)
 	}
 
