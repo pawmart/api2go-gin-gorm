@@ -7,6 +7,7 @@ import (
 	"api2go-gin-gorm-simple/model"
 	"api2go-gin-gorm-simple/storage"
 	"github.com/manyminds/api2go"
+	"strconv"
 )
 
 // UserResource for api2go routes
@@ -16,12 +17,17 @@ type UserResource struct {
 
 // FindAll to satisfy api2go data source interface
 func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
-	users, err := s.UserStorage.GetAll()
-	if err != nil {
-		return &Response{}, err
+
+	users, _ := s.UserStorage.GetAll()
+
+	var result []model.User
+
+	for _, user := range users {
+		result = append(result, *user)
 	}
 
-	return &Response{Res: users}, nil
+	return &Response{Res: result}, nil
+
 }
 
 // PaginatedFindAll can be used to load users in chunks
@@ -31,8 +37,52 @@ func (s UserResource) PaginatedFindAll(r api2go.Request) (uint, api2go.Responder
 		return 0, &Response{}, err
 	}
 
-	// TODO: finish this off!
-	return uint(len(users)), &Response{Res: users}, nil
+	var (
+		result       []model.User
+		keys         []string
+		number, size string
+	)
+
+	for k := range users {
+		i := k
+		if err != nil {
+			return 0, &Response{}, err
+		}
+
+		keys = append(keys, i)
+	}
+	//sort.Ints(keys)
+
+	numberQuery, ok := r.QueryParams["page[number]"]
+	if ok {
+		number = numberQuery[0]
+	}
+	sizeQuery, ok := r.QueryParams["page[size]"]
+	if ok {
+		size = sizeQuery[0]
+	}
+
+	if size != "" {
+		sizeI, err := strconv.ParseUint(size, 10, 64)
+		if err != nil {
+			return 0, &Response{}, err
+		}
+
+		numberI, err := strconv.ParseUint(number, 10, 64)
+		if err != nil {
+			return 0, &Response{}, err
+		}
+
+		start := sizeI * (numberI - 1)
+		for i := start; i < start + sizeI; i++ {
+			if i >= uint64(len(users)) {
+				break
+			}
+			result = append(result, *users[keys[i]])
+		}
+	}
+
+	return uint(len(users)), &Response{Res: result}, nil
 }
 
 // FindOne to satisfy `api2go.DataSource` interface

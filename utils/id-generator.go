@@ -3,14 +3,12 @@ package utils
 import (
 	"strings"
 	"math/rand"
-	"log"
 	"strconv"
 )
 
-func GenerateId(prefix string) string {
-	i := rand.Intn(9)
+func GenerateHumanId(prefix string) string {
+	i := rand.Intn(9999999999)
 
-	log.Println(i)
 	s := prefix + "-" + strconv.Itoa(i)
 
 	return strings.ToUpper(s)
